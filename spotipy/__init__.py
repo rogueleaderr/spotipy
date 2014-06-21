@@ -5,6 +5,7 @@ from __future__ import print_function
 import base64
 import requests
 import json
+from simplejson import JSONDecodeError
 
 
 __all__ = ['oauth2']
@@ -65,8 +66,14 @@ class Spotify(object):
         if self.trace:
             print()
             print(verb, r.url)
-        if not (r.status_code >= 200 and r.status_code < 300):
-            raise SpotifyException(r.status_code, -1, u'the requested resource could not be found: ' + r.url)
+        if r.status_code == 201:
+            return "CREATED"
+        elif not (r.status_code >= 200 and r.status_code < 300):
+            if r.status_code == 401:
+                msg = "you have insufficient authorization for what you're trying to do at " + r.url
+            else:
+                msg = u'the requested resource could not be found: ' + r.url
+            raise SpotifyException(r.status_code, -1, msg)
         results = r.json()
         if self.trace:
             print('RESP', results)
@@ -94,7 +101,9 @@ class Spotify(object):
             print()
             print("POST", r.url)
             print("DATA", json.dumps(payload))
-        if not (r.status_code >= 200 and r.status_code < 300):
+        if r.status_code == 201:
+            return "CREATED"
+        elif not (r.status_code >= 200 and r.status_code < 300):
             raise SpotifyException(r.status_code, -1, u'the requested resource could not be found: ' + r.url)
         try:
             results = r.json()
@@ -102,7 +111,7 @@ class Spotify(object):
                 print('RESP', results)
                 print()
             return results
-        except json.decoder.JSONDecodeError:
+        except JSONDecodeError:
             return None
 
     def next(self, result):
