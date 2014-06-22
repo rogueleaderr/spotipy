@@ -66,9 +66,7 @@ class Spotify(object):
         if self.trace:
             print()
             print(verb, r.url)
-        if r.status_code == 201:
-            return "CREATED"
-        elif not (r.status_code >= 200 and r.status_code < 300):
+        if not (r.status_code >= 200 and r.status_code < 300):
             if r.status_code == 401:
                 msg = "you have insufficient authorization for what you're trying to do at " + r.url
             else:
@@ -101,10 +99,12 @@ class Spotify(object):
             print()
             print("POST", r.url)
             print("DATA", json.dumps(payload))
-        if r.status_code == 201:
-            return "CREATED"
-        elif not (r.status_code >= 200 and r.status_code < 300):
-            raise SpotifyException(r.status_code, -1, u'the requested resource could not be found: ' + r.url)
+        if not (r.status_code >= 200 and r.status_code < 300):
+            if r.status_code == 401 or r.status_code == 403:
+                msg = "you have insufficient authorization for what you're trying to do at " + r.url
+            else:
+                msg = u'the requested resource could not be found: ' + r.url
+            raise SpotifyException(r.status_code, -1, msg)
         try:
             results = r.json()
             if self.trace:
@@ -112,7 +112,10 @@ class Spotify(object):
                 print()
             return results
         except JSONDecodeError:
-            return None
+            if r.status_code == 201:
+                return "CREATED"
+            else:
+                return None
 
     def next(self, result):
         ''' returns the next result given a result
@@ -228,7 +231,7 @@ class Spotify(object):
     def user_playlist_add_tracks(self, user, playlist_id, tracks, position=None):
         ''' Adds tracks to a playlist
         '''
-        return self.post("users/%s/playlists/%s/tracks" % (user,playlist_id), 
+        return self.post("users/%s/playlists/%s/tracks" % (user,playlist_id),
              payload = tracks, position=position)
     
     def me(self):
