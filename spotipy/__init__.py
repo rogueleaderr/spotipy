@@ -101,7 +101,10 @@ class Spotify(object):
             print("DATA", json.dumps(payload))
         if not (r.status_code >= 200 and r.status_code < 300):
             if r.status_code == 401 or r.status_code == 403:
-                msg = "you have insufficient authorization for what you're trying to do at " + r.url
+                try:
+                    msg = r.json()["error"]["message"]
+                except JSONDecodeError:
+                    msg = "you have insufficient authorization for what you're trying to do at " + r.url
             else:
                 msg = u'the requested resource could not be found: ' + r.url
             raise SpotifyException(r.status_code, -1, msg)
