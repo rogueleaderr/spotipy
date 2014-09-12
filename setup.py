@@ -1,13 +1,12 @@
 from setuptools import setup
 
-
 setup(
-    name='SpotipyWebApi',
-    version='1.43',
+    name='spotipy',
+    version='2.0.1',
     description='simple client for the Spotify Web API',
     author="@plamere",
     author_email="paul@echonest.com",
-    url='http://github.com/plamere/spotipy',
+    url='http://spotipy.readthedocs.org/',
     install_requires=['requests>=1.0'],
     license='LICENSE.txt',
-    py_modules=['spotipy', 'spotipy.oauth2'],)
+    packages=['spotipy'])
